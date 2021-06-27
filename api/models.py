@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask import Flask
 from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, auto_field
 
 app = Flask(__name__)
 
@@ -27,7 +28,7 @@ class Customer(db.Model):
     id = db.Column(db.String(80), primary_key=True, default=generateUUID)
     username = db.Column(db.String(64), index=False, unique=True, nullable=False)
     email = db.Column(db.String(80), index=True, unique=True, nullable=False)
-    created = db.Column(db.DateTime, index=False, unique=False, nullable=False)
+    created = db.Column(db.DateTime, index=False, unique=False, nullable=False, default=datetime.datetime.utcnow)
 
     def __repr__(self):
         return "<User {}>".format(self.username)
@@ -64,9 +65,10 @@ Customer.work_orders = relationship("WorkOrder", order_by = WorkOrder.id, back_p
 Service.work_orders = relationship("WorkOrder", order_by = WorkOrder.id, back_populates = "service")
 
 
-class CustomerSchema(ma.Schema):
+class CustomerSchema(SQLAlchemyAutoSchema):
     class Meta:
-       fields = ('id', 'username', 'email', 'created')
+       model = Customer
+       include_relationships = True
     
     # id = ma.auto_field()
     # username = ma.auto_field()
@@ -75,14 +77,16 @@ class CustomerSchema(ma.Schema):
 
 
 
-class ServiceSchema(ma.Schema):
+class ServiceSchema(SQLAlchemyAutoSchema):
     class Meta:
-       fields = ('id', 'name', 'duration')
+       model = Service
+       include_relationships = True
     
 
-# class WorkOrderSchema(ma.SQLAlchemySchema):
-#     class Meta:
-#         model = WorkOrder
+class WorkOrderSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = WorkOrder
+        include_relationships = True
     
 #     id = ma.auto_field()
 #     name = ma.auto_field()
