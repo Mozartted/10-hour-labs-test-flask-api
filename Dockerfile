@@ -6,6 +6,7 @@ WORKDIR /code
 
 # RUN source venv/bin/activate
 RUN pip install -r requirements.txt
+
 RUN pip install gunicorn
 # CMD python app.py
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "wsgi:wsgi"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "wsgi:app"]

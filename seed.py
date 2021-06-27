@@ -7,9 +7,9 @@ class seed:
         self.name = name 
         self.duration = duration
 
-list.append(seed(name="service 1", duration=200))
-list.append(seed(name="service 2", duration=300))
-list.append(seed(name="service 3", duration=100))
+list.append(seed(name="Car service", duration=200))
+list.append(seed(name="Home service", duration=300))
+list.append(seed(name="Dental service", duration=100))
 
 if __name__  ==  "__main__" :
     for seed in list:
