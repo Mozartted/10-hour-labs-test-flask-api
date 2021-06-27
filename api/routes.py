@@ -1,9 +1,11 @@
 """Application routes."""
 from datetime import datetime as dt
+from dateutil import parser
 import sys
 from .util import WorkOrderUtil, successResponse, errorResponse
 from flask import current_app as app
 from flask import make_response, redirect, render_template, request, url_for, jsonify, json
+from sqlalchemy import and_ 
 from .models import Customer, Service, WorkOrder, db, ServiceSchema, WorkOrderSchema, CustomerSchema
 
 
@@ -38,28 +40,29 @@ def customerCreate():
         return successResponse(customer_schema_list.dump(customer))
 
     except Exception as e:
-        return errorResponse(str(e))
+        return errorResponse(str(e)), 400
 
 @app.route('/workorder/create', methods=["POST"])
 def create_order():
     # try:
     workOrderObject = request.get_json()
-    customerId = request.headers.get("customer_id")
+    # customerId = request.headers.get("customer_id")
+    customer = Customer.query.filter(Customer.email == workOrderObject["customer_email"]).first()
     # return workOrderObject["some"]
-    if  customerId != None:
+    if  customer != None:
         workUtil = WorkOrderUtil(
             name=workOrderObject["name"], 
             service_id=workOrderObject['service_id'], 
-            customer_id=customerId
+            customer_id=customer.id
         )
         workResponse = workUtil.create_new_workorder()
         return successResponse(work_schema.dump(workResponse))
     else:
-        return errorResponse("Customer header not present")
+        return errorResponse("Customer not present"), 400
 
 
-@app.route('/workorders', methods=["GET"])
-def get_orders():
+@app.route('/customer/workorders', methods=["GET"])
+def get_customer_orders():
     customerId = request.headers.get("customer_id")
     if  customerId != None:
         try:
@@ -72,3 +75,23 @@ def get_orders():
             return errorResponse(sys.exc_info()[0])
     else:
         return errorResponse("Customer header not present")
+
+@app.route('/workorders', methods=["GET"])
+def get_orders():
+    # check for queries
+    startRange = request.args.get('start_range')
+    endRange = request.args.get('end_range')
+
+    startRange = startRange if startRange != "null" else None
+    endRange = endRange if endRange != "null" else None
+
+    try:
+        if startRange != None and endRange != None:
+            startRange = parser.parse(startRange)
+            endRange = parser.parse(endRange)
+            workResponses = WorkOrder.query.filter(and_(WorkOrder.start_time >=startRange, WorkOrder.end_time <= endRange)).order_by("created_at")
+        else:
+            workResponses = WorkOrder.query.order_by("created_at")
+        return successResponse(work_schema_list.dump(workResponses))
+    except:
+        return errorResponse(sys.exc_info()[0]), 400

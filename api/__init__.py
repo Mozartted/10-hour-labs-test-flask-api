@@ -3,12 +3,14 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from .models import db
 # from ddtrace import patch_all
+from flask_cors import CORS
 from flask_migrate import Migrate
 
 # db = SQLAlchemy()
 
 app = Flask(__name__, instance_relative_config=False)
 # patch_all()
+CORS(app)
 
 migrate = Migrate(app, db)
 def create_app():

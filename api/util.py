@@ -21,11 +21,15 @@ class WorkOrderUtil():
         if mostRecentWorkOrder != None:
             # if the order exists.
             timeCurrentZone = mostRecentWorkOrder.end_time
-            print(timeCurrentZone)
+            # print(timeCurrentZone)
             return self.creatingWorkOrderStructure(timeCurrentZone, service)
         else:
             # if we have no active orders, create the most current order.
             currentTime = self.getCurrentTime()
+            if currentTime.weekday() == 6:
+                # it's a sunday
+                currentTime = (currentTime + timedelta(days=1)).replace(hour = 9, minute = 0, second = 0, microsecond = 0)
+
             return self.creatingWorkOrderStructure(currentTime, service)
 
     def creatingWorkOrderStructure(self, currentTime: datetime, service: Service):
@@ -44,6 +48,9 @@ class WorkOrderUtil():
             # create the entry for tomorrow.
             # set currentTime to tomorrow.
             currentTime = currentTime + timedelta(days=1)
+            if currentTime.weekday() == 6:
+                # it's a sunday
+                currentTime = currentTime + timedelta(days=1)
             startTime = currentTime + timedelta(minutes=10)
             getDurationLength = self.durationToEndOfDay(startTime)
 
@@ -67,7 +74,11 @@ class WorkOrderUtil():
             return workOrder
         else:
             # start it with tomorrow.
-            startTime = ( startTime + timedelta(days=1)).replace(hour= 9, minute=0, second=0, microsecond=0)
+            startTime = ( startTime + timedelta(days=1))
+            if startTime.weekday() == 6:
+                    # it's a sunday
+                startTime = startTime + timedelta(days=1)
+            startTime = startTime.replace(hour= 9, minute=0, second=0, microsecond=0)
             workOrder = WorkOrder(
                 name = self.name, 
                 service_id = service.id, 
