@@ -57,17 +57,12 @@ def create_order():
     else:
         return errorResponse("Customer header not present")
 
-    # except Exception as e:
-    #     raise e
-        # return errorResponse(str(e))
 
 @app.route('/workorders', methods=["GET"])
 def get_orders():
     customerId = request.headers.get("customer_id")
     if  customerId != None:
         try:
-            # customerId = request.args.get("customer_id")
-            # # return workOrderObject["some"]
             if customerId:
                 workResponses = WorkOrder.query.filter( WorkOrder.customer_id == customerId).order_by("created_at")
                 return successResponse(work_schema_list.dump(workResponses))
